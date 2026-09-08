@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rozklad čísel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#32a0d2;
+    --orange:#ffaa37;
+    --ink:#14384a;
+    --paper:#f6fbfd;
+    --ok:#2e9e6b;
+    --no:#e2574c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Barlow Condensed",Calibri,Arial,sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:24px 16px 48px;
+  }
+  h1{font-size:44px;font-weight:700;letter-spacing:.5px;margin:0 0 4px;color:var(--blue)}
+  .podnadpis{font-size:20px;margin:0 0 20px;color:#5b7b8a;text-align:center}
+
+  .prepinac{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;justify-content:center}
+  .prepinac button{
+    font-family:inherit;font-size:20px;font-weight:600;
+    padding:8px 18px;border:2px solid var(--blue);border-radius:999px;
+    background:#fff;color:var(--blue);cursor:pointer;
+  }
+  .prepinac button[aria-pressed="true"]{background:var(--blue);color:#fff}
+  .prepinac.zapis button{border-color:var(--orange);color:#c47f16}
+  .prepinac.zapis button[aria-pressed="true"]{background:var(--orange);color:#fff}
+  button:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+  .prepinac.zapis button:focus-visible{outline-color:var(--blue)}
+
+  .cislo{
+    margin-top:16px;border:5px solid var(--orange);border-radius:18px;background:#fff;
+    padding:6px 42px 14px;
+    font-size:96px;font-weight:700;line-height:1.1;letter-spacing:2px;
+    min-width:230px;text-align:center;
+  }
+  .sipka{font-size:34px;color:var(--blue);margin:10px 0 4px}
+
+  .policka{display:flex;gap:12px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+  .policko{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .policko input{
+    font-family:inherit;font-size:48px;font-weight:700;text-align:center;
+    width:112px;height:96px;
+    border:4px solid var(--blue);border-radius:14px;background:#fff;color:var(--ink);
+  }
+  .policko input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,170,55,.28)}
+  .policko span{font-size:22px;font-weight:600;color:#5b7b8a;min-height:26px}
+  .policko.dano input{border-style:dashed;background:#eaf5fb;color:#5b7b8a}
+  .policko.spravne input{border-color:var(--ok);background:#eefaf3}
+  .policko.chyba input{border-color:var(--no);background:#fdeeed}
+  .znak{font-size:44px;font-weight:700;color:var(--blue);line-height:96px}
+
+  .tlacitko{
+    font-family:inherit;font-size:24px;font-weight:700;
+    margin-top:26px;padding:11px 34px;border:none;border-radius:999px;
+    background:var(--orange);color:#fff;cursor:pointer;
+  }
+  .tlacitko:hover{filter:brightness(.95)}
+
+  .hlaska{font-size:26px;font-weight:600;min-height:34px;margin-top:14px;text-align:center}
+  .hlaska.ok{color:var(--ok)}
+  .hlaska.no{color:var(--no)}
+
+  .skore{margin-top:18px;font-size:21px;color:#5b7b8a}
+  .skore b{color:var(--blue);font-size:25px}
+
+  @media (max-width:560px){
+    h1{font-size:34px}
+    .cislo{font-size:68px;padding:4px 26px 10px;min-width:0}
+    .policko input{width:86px;height:76px;font-size:36px}
+    .znak{line-height:76px;font-size:34px}
+  }
+</style>
+</head>
+<body>
+
+<h1>Rozklad čísel</h1>
+<p class="podnadpis" id="podnadpis">Rozlož číslo na řády.</p>
+
+<div class="prepinac">
+  <button id="u1" aria-pressed="true">Do 100</button>
+  <button id="u2" aria-pressed="false">Do 1000</button>
+</div>
+
+<div class="prepinac zapis">
+  <button id="z-hodnota" aria-pressed="true">40 + 2</button>
+  <button id="z-pocet" aria-pressed="false">4 a 2</button>
+  <button id="z-soucet" aria-pressed="false">8 = 5 + ?</button>
+</div>
+
+<div class="cislo" id="cislo">42</div>
+<div class="sipka">↓</div>
+
+<div class="policka">
+  <div class="policko" id="p1" hidden>
+    <input type="text" inputmode="numeric" maxlength="3" id="in1" aria-label="první políčko">
+    <span id="l1">stovky</span>
+  </div>
+  <div class="znak" id="zn1" hidden>+</div>
+  <div class="policko" id="p2">
+    <input type="text" inputmode="numeric" maxlength="3" id="in2" aria-label="druhé políčko">
+    <span id="l2">desítky</span>
+  </div>
+  <div class="znak" id="zn2">+</div>
+  <div class="policko" id="p3">
+    <input type="text" inputmode="numeric" maxlength="3" id="in3" aria-label="třetí políčko">
+    <span id="l3">jednotky</span>
+  </div>
+</div>
+
+<button class="tlacitko" id="akce">Zkontrolovat</button>
+<p class="hlaska" id="hlaska"></p>
+<p class="skore">Správně: <b id="body">0</b> z <b id="celkem">0</b></p>
+
+<script>
+(function(){
+  var uroven = 1, rezim = 'hodnota', cislo = 0, ceka = false, body = 0, celkem = 0;
+  var ocekavane = [], danyIndex = -1;
+
+  var el = {};
+  ['cislo','hlaska','akce','body','celkem','podnadpis','p1','p2','p3','zn1','zn2','in1','in2','in3','l1','l2','l3']
+    .forEach(function(id){ el[id] = document.getElementById(id); });
+
+  var vstupy = [el.in1, el.in2, el.in3];
+  var bunky  = [el.p1, el.p2, el.p3];
+
+  function aktivni(){
+    return rezim === 'soucet' ? [el.in2, el.in3] : (uroven === 2 ? vstupy : [el.in2, el.in3]);
+  }
+  function volne(){ return aktivni().filter(function(i){ return !i.disabled; }); }
+
+  function nahodne(a,b){ return Math.floor(Math.random()*(b-a+1)) + a; }
+  function tvar(n,t){ return n + ' ' + (n === 1 ? t[0] : (n >= 2 && n <= 4 ? t[1] : t[2])); }
+
+  function napoveda(){
+    if (rezim === 'pocet'){
+      var c = [];
+      if (uroven === 2) c.push(tvar(ocekavane[0],['stovka','stovky','stovek']));
+      c.push(tvar(ocekavane[ocekavane.length-2],['desítka','desítky','desítek']));
+      c.push(tvar(ocekavane[ocekavane.length-1],['jednotka','jednotky','jednotek']));
+      return cislo + ' = ' + c.join(', ');
+    }
+    return cislo + ' = ' + ocekavane.join(' + ');
+  }
+
+  function noveCislo(){
+    var pocetPolicek;
+
+    if (rezim === 'soucet'){
+      cislo = uroven === 1 ? nahodne(4,10) : nahodne(11,20);
+      var prvni = nahodne(1, cislo - 1);
+      ocekavane = [prvni, cislo - prvni];
+      danyIndex = nahodne(0,1);
+      pocetPolicek = 2;
+    } else {
+      cislo = uroven === 2 ? nahodne(100,999) : nahodne(10,99);
+      var c = String(cislo).padStart(3,'0');
+      var cifry = uroven === 2 ? [+c[0], +c[1], +c[2]] : [+c[1], +c[2]];
+      var nasobky = uroven === 2 ? [100,10,1] : [10,1];
+      ocekavane = (rezim === 'hodnota') ? cifry.map(function(x,i){ return x*nasobky[i]; }) : cifry;
+      danyIndex = -1;
+      pocetPolicek = cifry.length;
+    }
+
+    // zobrazení políček
+    el.p1.hidden = el.zn1.hidden = (pocetPolicek < 3);
+    var pouzite = aktivni();
+    bunky.forEach(function(b){ b.className = 'policko'; });
+
+    pouzite.forEach(function(vst, i){
+      vst.value = ''; vst.disabled = false;
+      vst.maxLength = (rezim === 'pocet') ? 1 : 3;
+      if (rezim === 'soucet' && i === danyIndex){
+        vst.value = ocekavane[i];
+        vst.disabled = true;
+        vst.parentNode.className = 'policko dano';
+      }
+    });
+
+    // popisky
+    if (rezim === 'soucet'){
+      el.l2.textContent = ''; el.l3.textContent = '';
+      el.zn2.textContent = '+';
+    } else {
+      el.l1.textContent = 'stovky'; el.l2.textContent = 'desítky'; el.l3.textContent = 'jednotky';
+      el.zn1.style.visibility = el.zn2.style.visibility = (rezim === 'hodnota') ? 'visible' : 'hidden';
+      el.zn1.textContent = el.zn2.textContent = '+';
+    }
+    if (rezim === 'soucet'){ el.zn2.style.visibility = 'visible'; }
+
+    el.hlaska.textContent = ''; el.hlaska.className = 'hlaska';
+    el.cislo.textContent = cislo;
+    el.akce.textContent = 'Zkontrolovat';
+    ceka = false;
+    if (volne()[0]) volne()[0].focus();
+  }
+
+  function reset(){ body = 0; celkem = 0; el.body.textContent = 0; el.celkem.textContent = 0; noveCislo(); }
+
+  function nastavUroven(u){
+    uroven = u;
+    document.getElementById('u1').setAttribute('aria-pressed', u === 1);
+    document.getElementById('u2').setAttribute('aria-pressed', u === 2);
+    reset();
+  }
+
+  function nastavRezim(r){
+    rezim = r;
+    ['hodnota','pocet','soucet'].forEach(function(k){
+      document.getElementById('z-'+k).setAttribute('aria-pressed', k === r);
+    });
+    if (r === 'soucet'){
+      document.getElementById('u1').textContent = 'Do 10';
+      document.getElementById('u2').textContent = 'Do 20';
+      el.podnadpis.textContent = 'Doplň druhého sčítance.';
+    } else {
+      document.getElementById('u1').textContent = 'Do 100';
+      document.getElementById('u2').textContent = 'Do 1000';
+      el.podnadpis.textContent = 'Rozlož číslo na řády.';
+    }
+    reset();
+  }
+
+  function zkontroluj(){
+    var pouzite = aktivni(), vse = true;
+    for (var i = 0; i < pouzite.length; i++){
+      if (pouzite[i].disabled) continue;
+      if (pouzite[i].value === ''){
+        el.hlaska.textContent = 'Vyplň všechna políčka.';
+        el.hlaska.className = 'hlaska no';
+        pouzite[i].focus(); return;
+      }
+      var ok = Number(pouzite[i].value) === ocekavane[i];
+      pouzite[i].parentNode.className = 'policko ' + (ok ? 'spravne' : 'chyba');
+      if (!ok) vse = false;
+    }
+    celkem++; if (vse) body++;
+    el.body.textContent = body; el.celkem.textContent = celkem;
+    el.hlaska.textContent = (vse ? 'Správně! ' : 'Ještě ne. ') + napoveda();
+    el.hlaska.className = 'hlaska ' + (vse ? 'ok' : 'no');
+    pouzite.forEach(function(i){ i.disabled = true; });
+    el.akce.textContent = 'Další číslo';
+    ceka = true;
+    el.akce.focus();
+  }
+
+  el.akce.addEventListener('click', function(){ ceka ? noveCislo() : zkontroluj(); });
+  document.getElementById('u1').addEventListener('click', function(){ nastavUroven(1); });
+  document.getElementById('u2').addEventListener('click', function(){ nastavUroven(2); });
+  ['hodnota','pocet','soucet'].forEach(function(k){
+    document.getElementById('z-'+k).addEventListener('click', function(){ nastavRezim(k); });
+  });
+
+  vstupy.forEach(function(input){
+    input.addEventListener('input', function(){
+      var max = (rezim === 'pocet') ? 1 : 3;
+      this.value = this.value.replace(/[^0-9]/g,'').slice(0, max);
+      if (rezim === 'pocet' && this.value){
+        var p = volne(), i = p.indexOf(this);
+        if (i > -1 && i < p.length - 1) p[i+1].focus();
+      }
+    });
+    input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter'){ e.preventDefault(); ceka ? noveCislo() : zkontroluj(); }
+      if (e.key === 'Backspace' && !this.value){
+        var p = volne(), i = p.indexOf(this);
+        if (i > 0) p[i-1].focus();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', function(e){ if (e.key === 'Enter' && ceka) noveCislo(); });
+
+  nastavRezim('hodnota');
+})();
+</script>
+</body>
+</html>
